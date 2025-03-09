@@ -1,0 +1,16 @@
+[ 2025-03-09 12:03:09,955 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 12:03:10,013 ] 22 root - INFO: -------------------------------------------Pipeline initialized successfully------------------------------------
+[ 2025-03-09 12:03:10,028 ] 634 asyncio - DEBUG: Using proactor: IocpProactor
+[ 2025-03-09 12:03:56,201 ] 723 root - INFO: Initiating get asset details pipeline
+[ 2025-03-09 12:03:56,201 ] 725 root - INFO: Checking if asset exists
+[ 2025-03-09 12:03:56,201 ] 139 root - INFO: <<< Calling Asset Exists Component
+[ 2025-03-09 12:03:56,201 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 12:03:56,202 ] 13 root - INFO: MySql Database Connection Sucessfull for Asset Type Exists Component !!!
+[ 2025-03-09 12:03:56,451 ] 733 root - INFO: Completed checking asset exists or not
+[ 2025-03-09 12:03:56,452 ] 735 root - INFO: Initiating Get Asset Details Operation
+[ 2025-03-09 12:03:56,452 ] 159 root - INFO: <<< Calling AssetOperations Component
+[ 2025-03-09 12:03:56,452 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 12:03:56,452 ] 13 root - INFO: AssetTypeOperations initialized successfully
+[ 2025-03-09 12:03:56,657 ] 141 root - INFO: Failed to get asset details for asset id 
+[ 2025-03-09 12:03:56,660 ] 165 root - INFO: Error Calling AssetOperations Component (get asset details) Error occurred in script [asset_operations.py] at line [142]: Error occurred in script [result.py] at line [201]: Error getting asset details for asset Error occurred in script [result.py] at line [201]: asset_id
+[ 2025-03-09 12:03:56,660 ] 747 root - ERROR: Error in get asset details pipeline!!! - Error occurred in script [__init__.py] at line [166]: Error occurred in script [asset_operations.py] at line [142]: Error occurred in script [result.py] at line [201]: Error getting asset details for asset Error occurred in script [result.py] at line [201]: asset_id

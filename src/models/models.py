@@ -49,7 +49,6 @@ class AssetTypes(Base):
     def __repr__(self):
         return f"id={self.id} ,type_name={self.type_name} ,is_active={self.is_active}"
     
-# class Assets(Base):
 class Asset(Base):
     __tablename__ = 'assets'
     
@@ -62,6 +61,7 @@ class Asset(Base):
     is_active_asset = Column(Boolean, default=True)
     current_owner = Column(Integer, ForeignKey('users.id', ondelete='SET DEFAULT'), nullable=False, default=1)  # default value to 1 for admin
     
+
     def __init__(self, asset_type_id: int, asset_name: str, location: str, brand: str, purchase_year: Integer, 
                  is_active_asset: Optional[bool] = None,  current_owner: Optional[int] = 1, asset_id: Optional[int] = None):
         self.asset_id = asset_id
@@ -72,6 +72,7 @@ class Asset(Base):
         self.purchase_year = purchase_year
         self.is_active_asset = is_active_asset
         self.current_owner = current_owner
+        
 
     
     def __repr__(self):
@@ -85,6 +86,7 @@ class Transaction(Base):
     from_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     to_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     transaction_date = Column(DateTime, default=func.now())
+
 
     def __init__(self, asset_id: int, from_user_id: int, to_user_id: int):
         self.asset_id = asset_id

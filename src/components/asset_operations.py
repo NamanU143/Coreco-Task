@@ -100,43 +100,6 @@ class AssetOperations:
         finally:
             self.db.close()
 
-    def get_user_assets(self, user_id):
-        try:
-            assets = (
-                self.db.query(Asset, AssetTypes.type_name)  # Selecting Asset and type_name
-                .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
-                .filter(AssetTypes.is_active == True, Asset.current_owner == user_id, Asset.is_active_asset == True)
-                .all()
-            )
-
-            if not assets:
-                logging.info(f"No assets found for user {user_id}")
-                return []
-
-            # Formatting the response using chatgpt prompt look into the format in notes python
-            asset_list = [
-                {
-                    "asset_id": asset.asset_id,
-                    "asset_type_id": asset.asset_type_id,
-                    "asset_name": asset.asset_name,
-                    "type_name": type_name,
-                    "location": asset.location,
-                    "brand": asset.brand,
-                    "purchase_year": asset.purchase_year,
-                    "current_owner": asset.current_owner
-                }
-                for asset, type_name in assets  # this is like returning dictonary in list with list comprehension -- add to the materials.
-            ]
-
-            logging.info(f"Found {len(asset_list)} assets for user {user_id}")
-            return asset_list
-
-        except Exception as e:
-            logging.error(f"Failed to find assets for user {user_id}: {str(e)}")
-            raise CustomException(f"Error occurred while getting assets for user: {str(e)}")
-
-        finally:
-            self.db.close()
 
     def get_current_owner(self,asset_id):
         try:
@@ -162,7 +125,8 @@ class AssetOperations:
 
             if asset_details:
                 logging.info(f"asset details - > {asset_details.asset_id}")
-                asset, type_name = asset_details  # Unpacking tuple
+                asset, type_name = asset_details  # here we are getting the asset and the type name differently inside a tuple so it need
+                                                    # to store in seperate variables and then use it. 
 
                 return {
                     "asset_id": asset.asset_id,
@@ -180,6 +144,37 @@ class AssetOperations:
         finally:
             self.db.close()
 
+    def get_asset_details(self, asset_id):
+        try:
+            asset_details = (
+                self.db.query(Asset, AssetTypes.type_name)
+                .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
+                .filter(Asset.asset_id == asset_id)
+                .first()
+            )
+
+            if asset_details:
+                asset, type_name = asset_details  # Unpacking tuple
+
+                return {
+                    "asset_id": asset.asset_id,
+                    "asset_type_id": asset.asset_type_id,
+                    "type_name": type_name,
+                    "asset_name": asset.asset_name,
+                    "location": asset.location,
+                    "brand": asset.brand,
+                    "purchase_year": asset.purchase_year,
+                    "current_owner": asset.current_owner
+                }
+            else:
+                logging.info(f"No asset found with id {asset_id}")
+                return None
+
+        except Exception as e:
+            logging.error(f"Failed to get asset details for asset id {asset_id}: {e}")
+            raise CustomException(f"Error getting asset details: {CustomException(e)}")
+        finally:
+            self.db.close()
     
 
 
