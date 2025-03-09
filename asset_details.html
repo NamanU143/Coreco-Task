@@ -9,36 +9,57 @@
 <body class="bg-light">
     <div class="container mt-5">
         <h2 class="text-center mb-4">Asset Details</h2>
-        <div class="card p-4 shadow">
-            <h4 id="assetName"></h4>
-            <p><strong>Asset ID:</strong> <span id="assetId"></span></p>
-            <p><strong>Category:</strong> <span id="category"></span></p>
-            <p><strong>Current Owner:</strong> <span id="owner"></span></p>
-            <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
-            <p><strong>Condition:</strong> <span id="condition"></span></p>
-            <a href="admin_dashboard.html" class="btn btn-primary">Back to Dashboard</a>
-        </div>
+        <table class="table table-bordered">
+            <tbody>
+                <tr><th>Asset ID</th><td id="asset_id"></td></tr>
+                <tr><th>Asset Name</th><td id="asset_name"></td></tr>
+                <tr><th>Asset Type</th><td id="type_name"></td></tr>
+                <tr><th>Brand</th><td id="brand"></td></tr>
+                <tr><th>Location</th><td id="location"></td></tr>
+                <tr><th>Purchase Year</th><td id="purchase_year"></td></tr>
+                <tr><th>Current Owner</th><td id="current_owner"></td></tr>
+            </tbody>
+        </table>
+        <a href="admin_dashboard.html" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
 
     <script>
-        // Get Asset ID from URL
-        const params = new URLSearchParams(window.location.search);
-        const assetId = params.get("id");
-
-        // Fetch Asset Details (Mock API Call)
         async function fetchAssetDetails() {
-            let response = await fetch(`http://localhost:3000/assets/${assetId}`);
-            let asset = await response.json();
+            const urlParams = new URLSearchParams(window.location.search);
+            const assetId = urlParams.get("id");
 
-            document.getElementById("assetName").textContent = asset.name;
-            document.getElementById("assetId").textContent = asset.id;
-            document.getElementById("category").textContent = asset.category;
-            document.getElementById("owner").textContent = asset.owner;
-            document.getElementById("purchaseDate").textContent = asset.purchase_date;
-            document.getElementById("condition").textContent = asset.condition;
+            if (!assetId) {
+                console.error("No asset ID provided in URL.");
+                return;
+            }
+
+            try {
+                let response = await fetch(`http://localhost:3000/admin/get_asset_details/${assetId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                let data = await response.json();
+
+                if (data.assetExists && data.assetDetails) {
+                    document.getElementById("asset_id").textContent = data.assetDetails.asset_id;
+                    document.getElementById("asset_name").textContent = data.assetDetails.asset_name;
+                    document.getElementById("type_name").textContent = data.assetDetails.type_name;
+                    document.getElementById("brand").textContent = data.assetDetails.brand;
+                    document.getElementById("location").textContent = data.assetDetails.location;
+                    document.getElementById("purchase_year").textContent = data.assetDetails.purchase_year;
+                    document.getElementById("current_owner").textContent = data.assetDetails.current_owner;
+                } else {
+                    console.error("Asset details not found:", data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching asset details:", error);
+            }
         }
 
-        fetchAssetDetails();
+        // Fetch asset details on page load
+        document.addEventListener("DOMContentLoaded", fetchAssetDetails);
     </script>
 </body>
 </html>

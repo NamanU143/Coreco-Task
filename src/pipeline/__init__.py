@@ -164,6 +164,7 @@ class Pipeline:
         except Exception as e:
             logging.info(f"Error Calling AssetOperations Component (get asset details) {CustomException(e)}")
             raise CustomException(e)
+   
     def __call_get_asset_type_id(self,type_name):
         try:
             logging.info("<<< Calling AssetTypeOperations Component")

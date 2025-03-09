@@ -2,7 +2,7 @@ from src.logger import logging
 from src.exception import CustomException
 from src.configuration.mysql_connection import DatabaseConnection
 from src.models.models import Asset
-from src.models.models import AssetTypes
+from src.models.models import AssetTypes,User
 
 class AssetOperations:
 
@@ -43,7 +43,7 @@ class AssetOperations:
         try:
             assets = (self.db.query(Asset)
                       .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
-                      .filter(AssetTypes.is_active == True).order_by(Asset.asset_id).all())
+                      .filter(AssetTypes.is_active == True,Asset.is_active_asset == True).order_by(Asset.asset_id).all())
             
             if len(assets) <= 0:
                 logging.info("No asset types found in the database")
@@ -116,65 +116,36 @@ class AssetOperations:
     def get_asset_details(self, asset_id):
         try:
             asset_details = (
-                self.db.query(Asset, AssetTypes.type_name)
+                self.db.query(Asset, AssetTypes.type_name, User.name)
                 .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
-                .filter(Asset.asset_id == asset_id)
-                .first()
-            )
-
-
-            if asset_details:
-                logging.info(f"asset details - > {asset_details.asset_id}")
-                asset, type_name = asset_details  # here we are getting the asset and the type name differently inside a tuple so it need
-                                                    # to store in seperate variables and then use it. 
-
-                return {
-                    "asset_id": asset.asset_id,
-                    "asset_type_id": asset_details.asset_type_id,
-                    "type_name": type_name,
-                    "asset_name": asset.asset_name,
-                    "location": asset.location,
-                    "brand": asset.brand,
-                    "purchase_year": asset.purchase_year,
-                    "current_owner": asset.current_owner
-                }
-        except Exception as e:
-            logging.info(f"Failed to get asset details for asset id ")
-            raise CustomException(f"Error getting asset details for asset {CustomException(e)}")
-        finally:
-            self.db.close()
-
-    def get_asset_details(self, asset_id):
-        try:
-            asset_details = (
-                self.db.query(Asset, AssetTypes.type_name)
-                .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
+                .join(User, Asset.current_owner == User.id)
                 .filter(Asset.asset_id == asset_id)
                 .first()
             )
 
             if asset_details:
-                asset, type_name = asset_details  # Unpacking tuple
+                asset, type_name, current_owner_name = asset_details  # Unpacking tuple
+
+                logging.info(f"Asset details -> asset_id: {asset.asset_id}")
+                logging.info(f"Asset details -> current owner name: {current_owner_name}")
+
 
                 return {
                     "asset_id": asset.asset_id,
-                    "asset_type_id": asset.asset_type_id,
+                    "asset_type_id": asset.asset_type_id,  # Fixed attribute access
                     "type_name": type_name,
                     "asset_name": asset.asset_name,
                     "location": asset.location,
                     "brand": asset.brand,
                     "purchase_year": asset.purchase_year,
-                    "current_owner": asset.current_owner
+                    "current_owner": current_owner_name  # Correctly fetching name
                 }
-            else:
-                logging.info(f"No asset found with id {asset_id}")
-                return None
 
         except Exception as e:
-            logging.error(f"Failed to get asset details for asset id {asset_id}: {e}")
-            raise CustomException(f"Error getting asset details: {CustomException(e)}")
+            logging.error(f"Failed to get asset details for asset id {asset_id}: {str(e)}")
+            raise CustomException(f"Error getting asset details for asset {asset_id}: {str(e)}")
+
         finally:
             self.db.close()
-    
 
 
