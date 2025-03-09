@@ -1,0 +1,16 @@
+[ 2025-03-09 01:47:30,428 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:47:30,444 ] 22 root - INFO: -------------------------------------------Pipeline initialized successfully------------------------------------
+[ 2025-03-09 01:47:32,731 ] 723 root - INFO: Initiating get asset details pipeline
+[ 2025-03-09 01:47:32,732 ] 725 root - INFO: Checking if asset exists
+[ 2025-03-09 01:47:32,732 ] 139 root - INFO: <<< Calling Asset Exists Component
+[ 2025-03-09 01:47:32,732 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:47:32,732 ] 13 root - INFO: MySql Database Connection Sucessfull for Asset Type Exists Component !!!
+[ 2025-03-09 01:47:32,971 ] 733 root - INFO: Completed checking asset exists or not
+[ 2025-03-09 01:47:32,972 ] 735 root - INFO: Initiating Get Asset Details Operation
+[ 2025-03-09 01:47:32,972 ] 159 root - INFO: <<< Calling AssetOperations Component
+[ 2025-03-09 01:47:32,973 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:47:32,973 ] 13 root - INFO: AssetTypeOperations initialized successfully
+[ 2025-03-09 01:47:33,202 ] 162 root - INFO: asset details - > (asset_id=1, asset_type_id=1, asset_name=landline phone, location=Baner, brand=BSNL, purchase_year=2025, is_active=True, current_owner=5, 'Electronics')
+[ 2025-03-09 01:47:33,202 ] 177 root - INFO: Failed to get asset details for asset id 1
+[ 2025-03-09 01:47:33,204 ] 165 root - INFO: Error Calling AssetOperations Component (get asset details) Error occurred in script [asset_operations.py] at line [178]: Error occurred in script [resultproxy.pyx] at line [54]: Error getting asset details for asset Error occurred in script [resultproxy.pyx] at line [54]: tuple indices must be integers or slices, not str
+[ 2025-03-09 01:47:33,204 ] 747 root - ERROR: Error in get asset details pipeline!!! - Error occurred in script [__init__.py] at line [166]: Error occurred in script [asset_operations.py] at line [178]: Error occurred in script [resultproxy.pyx] at line [54]: Error getting asset details for asset Error occurred in script [resultproxy.pyx] at line [54]: tuple indices must be integers or slices, not str

@@ -1,0 +1,16 @@
+[ 2025-03-09 01:51:58,769 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:51:58,785 ] 22 root - INFO: -------------------------------------------Pipeline initialized successfully------------------------------------
+[ 2025-03-09 01:52:01,270 ] 723 root - INFO: Initiating get asset details pipeline
+[ 2025-03-09 01:52:01,270 ] 725 root - INFO: Checking if asset exists
+[ 2025-03-09 01:52:01,270 ] 139 root - INFO: <<< Calling Asset Exists Component
+[ 2025-03-09 01:52:01,271 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:52:01,271 ] 13 root - INFO: MySql Database Connection Sucessfull for Asset Type Exists Component !!!
+[ 2025-03-09 01:52:01,494 ] 733 root - INFO: Completed checking asset exists or not
+[ 2025-03-09 01:52:01,496 ] 735 root - INFO: Initiating Get Asset Details Operation
+[ 2025-03-09 01:52:01,496 ] 159 root - INFO: <<< Calling AssetOperations Component
+[ 2025-03-09 01:52:01,496 ] 25 root - INFO: Database Connection Sucessful !!!
+[ 2025-03-09 01:52:01,496 ] 13 root - INFO: AssetTypeOperations initialized successfully
+[ 2025-03-09 01:52:01,708 ] 162 root - INFO: asset details - > (asset_id=1, asset_type_id=1, asset_name=landline phone, location=Baner, brand=BSNL, purchase_year=2025, is_active=True, current_owner=5, 'Electronics')
+[ 2025-03-09 01:52:01,708 ] 179 root - INFO: Failed to get asset details for asset id 
+[ 2025-03-09 01:52:01,710 ] 165 root - INFO: Error Calling AssetOperations Component (get asset details) Error occurred in script [asset_operations.py] at line [180]: Error occurred in script [result.py] at line [201]: Error getting asset details for asset Error occurred in script [result.py] at line [201]: asset_id
+[ 2025-03-09 01:52:01,711 ] 747 root - ERROR: Error in get asset details pipeline!!! - Error occurred in script [__init__.py] at line [166]: Error occurred in script [asset_operations.py] at line [180]: Error occurred in script [result.py] at line [201]: Error getting asset details for asset Error occurred in script [result.py] at line [201]: asset_id

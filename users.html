@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users List</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Users List</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <!-- Dynamic user rows will be added here -->
+            </tbody>
+        </table>
+        <a href="admin_dashboard.html" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+
+    <script>
+        let usersFetched = false; // Flag to prevent multiple API calls
+    
+        async function fetchUsers() {
+            if (usersFetched) return; // Stop multiple calls
+            usersFetched = true; 
+    
+            try {
+                let response = await fetch("http://localhost:3000/get_users");
+    
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                let data = await response.json();
+    
+                if (data.users && Array.isArray(data.users)) {
+                    let tableBody = document.getElementById("usersTableBody");
+                    tableBody.innerHTML = ""; // Clear existing data
+    
+                    data.users.forEach(user => {
+                        let row = `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td><a href="user_transactions.html?user_id=${user.id}">${user.name}</a></td>
+                                <td>${user.role}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    console.error("Invalid users data:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
+        }
+    
+        // Fetch users once when the page loads
+        document.addEventListener("DOMContentLoaded", fetchUsers);
+    </script>
+</body>
+</html>
