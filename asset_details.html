@@ -20,14 +20,45 @@
                 <tr><th>Current Owner</th><td id="current_owner"></td></tr>
             </tbody>
         </table>
+        
+        <button class="btn btn-warning mt-3" onclick="showModifyForm()">Modify Asset</button>
         <a href="admin_dashboard.html" class="btn btn-secondary mt-3">Back to Dashboard</a>
+
+        <!-- Modify Asset Form (Initially Hidden) -->
+        <div id="modifyAssetForm" class="mt-4 p-3 border bg-white" style="display: none;">
+            <h3>Modify Asset</h3>
+            <form id="modifyForm">
+                <input type="hidden" id="modifyAssetId">
+                <div class="mb-3">
+                    <label class="form-label">Asset Name</label>
+                    <input type="text" class="form-control" id="modifyAssetName" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Asset Type</label>
+                    <input type="text" class="form-control" id="modifyAssetType" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Brand</label>
+                    <input type="text" class="form-control" id="modifyBrand" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-control" id="modifyLocation" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Purchase Year</label>
+                    <input type="date" class="form-control" id="modifyPurchaseYear" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Asset</button>
+                <button type="button" class="btn btn-secondary" onclick="hideModifyForm()">Cancel</button>
+            </form>
+        </div>
     </div>
 
     <script>
         async function fetchAssetDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const assetId = urlParams.get("id");
-
             if (!assetId) {
                 console.error("No asset ID provided in URL.");
                 return;
@@ -35,13 +66,10 @@
 
             try {
                 let response = await fetch(`http://localhost:3000/admin/get_asset_details/${assetId}`);
-                
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-
                 let data = await response.json();
-
                 if (data.assetExists && data.assetDetails) {
                     document.getElementById("asset_id").textContent = data.assetDetails.asset_id;
                     document.getElementById("asset_name").textContent = data.assetDetails.asset_name;
@@ -58,7 +86,61 @@
             }
         }
 
-        // Fetch asset details on page load
+        function showModifyForm() {
+            document.getElementById("modifyAssetForm").style.display = "block";
+            document.getElementById("modifyAssetId").value = document.getElementById("asset_id").textContent;
+            document.getElementById("modifyAssetName").value = document.getElementById("asset_name").textContent;
+            document.getElementById("modifyAssetType").value = document.getElementById("type_name").textContent;
+            document.getElementById("modifyBrand").value = document.getElementById("brand").textContent;
+            document.getElementById("modifyLocation").value = document.getElementById("location").textContent;
+
+            // Set purchase year to a valid date format for input[type=date]
+            let purchaseYear = document.getElementById("purchase_year").textContent;
+            document.getElementById("modifyPurchaseYear").value = purchaseYear ? `${purchaseYear}-01-01` : "";
+        }
+
+        function hideModifyForm() {
+            document.getElementById("modifyAssetForm").style.display = "none";
+        }
+
+        document.getElementById("modifyForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const assetId = document.getElementById("modifyAssetId").value;
+            const assetType = document.getElementById("modifyAssetType").value;
+            const assetName = document.getElementById("modifyAssetName").value;
+            const brand = document.getElementById("modifyBrand").value;
+            const location = document.getElementById("modifyLocation").value;
+            const purchaseYear = new Date(document.getElementById("modifyPurchaseYear").value).getFullYear(); // Extract only the year
+
+            const updatedAsset = {
+                asset_id: parseInt(assetId),
+                asset_type_name: assetType,
+                asset_name: assetName,
+                location: location,
+                brand: brand,
+                purchase_year: purchaseYear
+            };
+
+            try {
+                const response = await fetch("http://localhost:3000/admin/modify_assets", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedAsset)
+                });
+                const result = await response.json();
+                if (result.assetModification) {
+                    alert("Asset modified successfully!");
+                    fetchAssetDetails();
+                    hideModifyForm();
+                } else {
+                    alert(result.message || "Error modifying asset.");
+                }
+            } catch (error) {
+                console.error("Error modifying asset:", error);
+                alert("Failed to modify asset. Please try again.");
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", fetchAssetDetails);
     </script>
 </body>

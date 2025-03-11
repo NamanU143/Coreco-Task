@@ -203,6 +203,7 @@ async def add_assets(data:AddAsset=Body(...)):
 
 @app.patch("/admin/modify_assets")
 async def modify_assets(data:ModifyAsset=Body(...)):
+    print("Received asset update request:", data.asset_id)
     try:
         response = pipeline.initiate_modify_asset_pipeline(asset_id=data.asset_id,asset_type_name=data.asset_type_name,
                                                            asset_name=data.asset_name,location=data.location,brand=data.brand,

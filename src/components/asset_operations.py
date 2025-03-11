@@ -41,19 +41,37 @@ class AssetOperations:
 
     def get_assets(self):
         try:
-            assets = (self.db.query(Asset)
-                      .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
-                      .filter(AssetTypes.is_active == True,Asset.is_active_asset == True).order_by(Asset.asset_id).all())
-            
-            if len(assets) <= 0:
-                logging.info("No asset types found in the database")
+            assets = (self.db.query(
+                        Asset.asset_id,
+                        Asset.asset_name,
+                        Asset.location,
+                        Asset.brand,
+                        Asset.purchase_year,
+                        Asset.is_active_asset,
+                        AssetTypes.type_name.label("asset_type"),
+                        User.name.label("current_owner_name"),
+                        Asset.current_owner
+                    )
+                    .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
+                    .join(User, Asset.current_owner == User.id)
+                    .filter(AssetTypes.is_active == True, Asset.is_active_asset == True)
+                    .order_by(Asset.asset_id)
+                    .all())
+
+            if not assets:
+                logging.info("No assets found in the database")
                 return []
-            logging.info(f"Found assets{assets}")
-            return assets
+
+            # this is how we convert the sqlalchemy returned object to dictonary instead of looping for every metric
+            assets_list = [dict(asset._asdict()) for asset in assets]
+
+            logging.info(f"Found assets: {assets_list}")
+            return assets_list
+
         except Exception as e:
             raise CustomException(f"Error occurred while getting assets: {CustomException(e)}")
         finally:
-            self.db.close()        
+            self.db.close()
 
     def modify_asset(self, asset_id, asset_type_id, asset_name, location, brand, purchase_year):
         try:

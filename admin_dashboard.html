@@ -9,58 +9,127 @@
 <body class="bg-light">
     <div class="container mt-5">
         <h2 class="text-center mb-4">Admin Dashboard - Asset List</h2>
+        
+        <!-- Bootstrap Toast Notification -->
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+            <div id="toastContainer" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body" id="toastMessage">Success message</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Sr. No.</th>
                     <th>Asset Name</th>
-                    <th>Brand</th>
-                    <th>Current Owner</th>
-                    <th>Location</th>
-                    <th>Purchase Year</th>
+                    <th>Current Owner Name</th>
+                    <th>Change Owner</th>
                 </tr>
             </thead>
-            <tbody id="assetTableBody">
-                <!-- Dynamic rows will be added here -->
-            </tbody>
+            <tbody id="assetTableBody"></tbody>
         </table>
+
         <a href="users.html" class="btn btn-primary mt-3">View Users</a>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchUsers();
             fetchAssets();
         });
+
+        let users = [];
+        let usersMap = {};
+
+        async function fetchUsers() {
+            try {
+                const response = await fetch("http://localhost:3000/get_users");
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                users = data.users.map(user => user.name);
+                usersMap = Object.fromEntries(data.users.map(user => [user.name, user.id]));
+            } catch (error) {
+                showToast("Error fetching users", "danger");
+                console.error("Error fetching users:", error);
+            }
+        }
 
         async function fetchAssets() {
             try {
                 const response = await fetch("http://localhost:3000/admin/get_assets");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
                 const data = await response.json();
                 renderAssets(data.assets);
             } catch (error) {
+                showToast("Failed to fetch assets", "danger");
                 console.error("Error fetching assets:", error);
             }
         }
 
         function renderAssets(assets) {
-            if (!assets || !Array.isArray(assets)) {
-                console.error("Invalid assets data:", assets);
-                return;
-            }
             const tableBody = document.getElementById("assetTableBody");
             tableBody.innerHTML = assets.map((asset, index) => `
-                <tr>
+                <tr id="row-${asset.asset_id}">
                     <td>${index + 1}</td>
                     <td><a href="asset_details.html?id=${asset.asset_id}">${asset.asset_name}</a></td>
-                    <td>${asset.brand}</td>
-                    <td>${asset.current_owner}</td>
-                    <td>${asset.location}</td>
-                    <td>${asset.purchase_year}</td>
+                    <td id="owner-${asset.asset_id}">${asset.current_owner_name}</td>
+                    <td>
+                        <select class="form-select" onchange="changeOwner(${asset.asset_id}, '${asset.current_owner_name}', this.value)">
+                            <option value="">Select Owner</option>
+                            ${users.map(user => `<option value="${user}">${user}</option>`).join('')}
+                        </select>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        async function changeOwner(assetId, fromOwner, toOwner) {
+            if (!toOwner || !usersMap[fromOwner] || !usersMap[toOwner]) return;
+
+            try {
+                const response = await fetch("http://localhost:3000/transfer_owner", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        asset_id: assetId,
+                        from_user_id: usersMap[fromOwner],
+                        to_user_id: usersMap[toOwner]
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Owner transferred successfully!", "success");
+                    
+                    // **Update only the changed row dynamically**
+                    document.getElementById(`owner-${assetId}`).textContent = toOwner;
+                    window.location.reload()
+                    
+                } else {
+                    showToast(result.message || "Error transferring owner.", "danger");
+                }
+            } catch (error) {
+                showToast("Failed to transfer owner", "danger");
+                console.error("Error transferring owner:", error);
+            }
+        }
+
+        function showToast(message, type) {
+            const toastContainer = document.getElementById("toastContainer");
+            const toastMessage = document.getElementById("toastMessage");
+
+            toastMessage.textContent = message;
+            toastContainer.classList.remove("text-bg-success", "text-bg-danger");
+            toastContainer.classList.add(`text-bg-${type}`);
+
+            const toast = new bootstrap.Toast(toastContainer);
+            toast.show();
         }
     </script>
 </body>
