@@ -138,7 +138,8 @@ class Pipeline:
         try:
             logging.info("<<< Calling Asset Exists Component")
             assetexists = AssetExists()
-            return assetexists.asset_exists(asset_id=asset_id)
+            result = assetexists.asset_exists(asset_id=asset_id)
+            return result
         except Exception as e:
             logging.info(f"Error Calling Asset Exists Component (asset exists) {CustomException(e)}")
             raise CustomException(e)
@@ -476,6 +477,8 @@ class Pipeline:
             assetexists = self.__call_asset_type_exists(type_name=type_name)
             logging.info("<<< Completed Asset Type Exists Component")
             
+            print(f"Asset Type Exists {assetexists}")
+
             if not assetexists :
                 return {
                     "message" : "Asset type does not exist in the database",
@@ -615,6 +618,7 @@ class Pipeline:
             logging.info(">>> Completed Asset Exists Component")
 
             if not assetexist:
+                print(f"Asset Exists----------{assetexist}")
                 return {
                     "assetExists" : False,
                     "message":f"Asset for asset id {asset_id} does not exist in the database"
@@ -623,8 +627,13 @@ class Pipeline:
             logging.info("<<< Initiated Asset Type Exists Component")
             assetypeexists = self.__call_asset_type_exists(type_name=asset_type_name)
             logging.info(">>> Completed Asset Type Exists Component")
+
+            print(f"""
+                asset name {asset_name} asset id {asset_id}, asset type {asset_type_name}
+            """)
             
             if not assetypeexists :
+                print(f"Asset Type Exists----------{assetypeexists} for asset id {asset_id} ,{asset_type_name}")
                 return {
                     "assetTypeExists" : False,
                     "message":"Asset type does not exist in the database"

@@ -156,7 +156,8 @@ class AssetOperations:
                     "location": asset.location,
                     "brand": asset.brand,
                     "purchase_year": asset.purchase_year,
-                    "current_owner": current_owner_name  # Correctly fetching name
+                    "current_owner": current_owner_name,  # Correctly fetching name
+                    "current_owner_id":asset.current_owner
                 }
 
         except Exception as e:

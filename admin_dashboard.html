@@ -20,44 +20,66 @@
             </div>
         </div>
 
+        <!-- Asset Table -->
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Sr. No.</th>
                     <th>Asset Name</th>
                     <th>Current Owner Name</th>
-                    <th>Change Owner</th>
                 </tr>
             </thead>
             <tbody id="assetTableBody"></tbody>
         </table>
 
+        <!-- Add Asset Form -->
+        <div class="card p-3 mb-3 shadow-sm">
+            <h5 class="text-center mb-2">Add Asset</h5>
+            <form id="addAssetForm">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label mb-1">Asset Type</label>
+                        <select class="form-control form-control-sm" id="assetType" required>
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label mb-1">Asset Name</label>
+                        <input type="text" class="form-control form-control-sm" id="assetName" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label mb-1">Location</label>
+                        <input type="text" class="form-control form-control-sm" id="location" required>
+                    </div>
+                </div>
+                
+                <div class="row g-2 mt-1">
+                    <div class="col-md-4">
+                        <label class="form-label mb-1">Brand</label>
+                        <input type="text" class="form-control form-control-sm" id="brand" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label mb-1">Purchase Year</label>
+                        <input type="date" class="form-control form-control-sm" id="purchaseYear" required>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success btn-sm w-100 py-1">Add</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
         <a href="users.html" class="btn btn-primary mt-3">View Users</a>
+        <a href="asset_types.html" class="btn btn-info mt-3">View Asset Types</a>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
-            await fetchUsers();
             fetchAssets();
+            fetchAssetTypes();
         });
-
-        let users = [];
-        let usersMap = {};
-
-        async function fetchUsers() {
-            try {
-                const response = await fetch("http://localhost:3000/get_users");
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
-                const data = await response.json();
-                users = data.users.map(user => user.name);
-                usersMap = Object.fromEntries(data.users.map(user => [user.name, user.id]));
-            } catch (error) {
-                showToast("Error fetching users", "danger");
-                console.error("Error fetching users:", error);
-            }
-        }
 
         async function fetchAssets() {
             try {
@@ -78,47 +100,61 @@
                 <tr id="row-${asset.asset_id}">
                     <td>${index + 1}</td>
                     <td><a href="asset_details.html?id=${asset.asset_id}">${asset.asset_name}</a></td>
-                    <td id="owner-${asset.asset_id}">${asset.current_owner_name}</td>
-                    <td>
-                        <select class="form-select" onchange="changeOwner(${asset.asset_id}, '${asset.current_owner_name}', this.value)">
-                            <option value="">Select Owner</option>
-                            ${users.map(user => `<option value="${user}">${user}</option>`).join('')}
-                        </select>
-                    </td>
+                    <td>${asset.current_owner_name}</td>
                 </tr>
             `).join('');
         }
 
-        async function changeOwner(assetId, fromOwner, toOwner) {
-            if (!toOwner || !usersMap[fromOwner] || !usersMap[toOwner]) return;
+        async function fetchAssetTypes() {
+            try {
+                const response = await fetch("http://localhost:3000/admin/get_asset_types");
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const data = await response.json();
+                if (data.asset_types.length > 0) {
+                    const assetTypeDropdown = document.getElementById("assetType");
+                    assetTypeDropdown.innerHTML = `<option value="">Select Asset Type</option>` + 
+                        data.asset_types.map(type => `<option value="${type.type_name}">${type.type_name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error("Error fetching asset types:", error);
+                showToast("Failed to load asset types", "danger");
+            }
+        }
+
+        document.getElementById("addAssetForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const purchaseDate = document.getElementById("purchaseYear").value;
+            const purchaseYear = new Date(purchaseDate).getFullYear(); // Extract year only
+
+            const assetData = {
+                asset_type_name: document.getElementById("assetType").value,
+                asset_name: document.getElementById("assetName").value,
+                location: document.getElementById("location").value,
+                brand: document.getElementById("brand").value,
+                purchase_year: purchaseYear
+            };
 
             try {
-                const response = await fetch("http://localhost:3000/transfer_owner", {
-                    method: "PUT",
+                const response = await fetch("http://localhost:3000/admin/add_assets", {
+                    method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        asset_id: assetId,
-                        from_user_id: usersMap[fromOwner],
-                        to_user_id: usersMap[toOwner]
-                    })
+                    body: JSON.stringify(assetData)
                 });
 
                 const result = await response.json();
-                if (result.success) {
-                    showToast("Owner transferred successfully!", "success");
-                    
-                    // **Update only the changed row dynamically**
-                    document.getElementById(`owner-${assetId}`).textContent = toOwner;
-                    window.location.reload()
-                    
+                if (response.ok && result.assetexists) {
+                    showToast("Asset added successfully!", "success");
+                    fetchAssets();
                 } else {
-                    showToast(result.message || "Error transferring owner.", "danger");
+                    showToast(result.message || "Failed to add asset", "danger");
                 }
             } catch (error) {
-                showToast("Failed to transfer owner", "danger");
-                console.error("Error transferring owner:", error);
+                showToast("Error adding asset", "danger");
+                console.error("Error adding asset:", error);
             }
-        }
+        });
 
         function showToast(message, type) {
             const toastContainer = document.getElementById("toastContainer");
@@ -128,8 +164,7 @@
             toastContainer.classList.remove("text-bg-success", "text-bg-danger");
             toastContainer.classList.add(`text-bg-${type}`);
 
-            const toast = new bootstrap.Toast(toastContainer);
-            toast.show();
+            new bootstrap.Toast(toastContainer).show();
         }
     </script>
 </body>

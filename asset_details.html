@@ -22,40 +22,22 @@
         </table>
         
         <button class="btn btn-warning mt-3" onclick="showModifyForm()">Modify Asset</button>
+        <button class="btn btn-primary mt-3" onclick="showTransferForm()">Transfer Owner</button>
         <a href="admin_dashboard.html" class="btn btn-secondary mt-3">Back to Dashboard</a>
 
-        <!-- Modify Asset Form (Initially Hidden) -->
-        <div id="modifyAssetForm" class="mt-4 p-3 border bg-white" style="display: none;">
-            <h3>Modify Asset</h3>
-            <form id="modifyForm">
-                <input type="hidden" id="modifyAssetId">
-                <div class="mb-3">
-                    <label class="form-label">Asset Name</label>
-                    <input type="text" class="form-control" id="modifyAssetName" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Asset Type</label>
-                    <input type="text" class="form-control" id="modifyAssetType" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Brand</label>
-                    <input type="text" class="form-control" id="modifyBrand" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Location</label>
-                    <input type="text" class="form-control" id="modifyLocation" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Purchase Year</label>
-                    <input type="date" class="form-control" id="modifyPurchaseYear" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Update Asset</button>
-                <button type="button" class="btn btn-secondary" onclick="hideModifyForm()">Cancel</button>
-            </form>
+        <!-- Transfer Owner Form (Initially Hidden) -->
+        <div id="transferOwnerForm" class="mt-4 p-3 border bg-white" style="display: none;">
+            <h3>Transfer Owner</h3>
+            <label class="form-label">Select New Owner</label>
+            <select id="userDropdown" class="form-select mb-3"></select>
+            <button class="btn btn-success" onclick="transferOwner()">Apply Transfer</button>
+            <button class="btn btn-secondary" onclick="hideTransferForm()">Cancel</button>
         </div>
     </div>
 
     <script>
+        let currentOwnerId = null; // Store current owner ID globally
+        
         async function fetchAssetDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const assetId = urlParams.get("id");
@@ -78,6 +60,8 @@
                     document.getElementById("location").textContent = data.assetDetails.location;
                     document.getElementById("purchase_year").textContent = data.assetDetails.purchase_year;
                     document.getElementById("current_owner").textContent = data.assetDetails.current_owner;
+                    
+                    currentOwnerId = data.assetDetails.current_owner_id; // Store the current owner ID
                 } else {
                     console.error("Asset details not found:", data.message);
                 }
@@ -86,39 +70,122 @@
             }
         }
 
+        async function showTransferForm() {
+            document.getElementById("transferOwnerForm").style.display = "block";
+            try {
+                let response = await fetch("http://localhost:3000/get_users");
+                let data = await response.json();
+                if (data.users) {
+                    let dropdown = document.getElementById("userDropdown");
+                    dropdown.innerHTML = "";
+                    data.users.forEach(user => {
+                        let option = document.createElement("option");
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        dropdown.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching user list:", error);
+            }
+        }
+
+        function hideTransferForm() {
+            document.getElementById("transferOwnerForm").style.display = "none";
+        }
+
+        async function transferOwner() {
+            const assetId = parseInt(document.getElementById("asset_id").textContent);
+            const newOwnerId = parseInt(document.getElementById("userDropdown").value);
+            
+            if (!currentOwnerId) {
+                alert("Error: Current owner ID is missing.");
+                return;
+            }
+
+            const transferData = {
+                asset_id: assetId,
+                from_user_id: currentOwnerId, // Use fetched current owner ID
+                to_user_id: newOwnerId
+            };
+
+            try {
+                const response = await fetch("http://localhost:3000/transfer_owner", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(transferData)
+                });
+                const result = await response.json();
+                if (result.transactionStatus) {
+                    alert("Transaction Successful!");
+                    fetchAssetDetails();
+                    hideTransferForm();
+                } else {
+                    alert(result.message || "Error transferring asset.");
+                }
+            } catch (error) {
+                console.error("Error transferring asset:", error);
+                alert("Failed to transfer asset. Please try again.");
+            }
+        }
+
         function showModifyForm() {
-            document.getElementById("modifyAssetForm").style.display = "block";
-            document.getElementById("modifyAssetId").value = document.getElementById("asset_id").textContent;
-            document.getElementById("modifyAssetName").value = document.getElementById("asset_name").textContent;
-            document.getElementById("modifyAssetType").value = document.getElementById("type_name").textContent;
-            document.getElementById("modifyBrand").value = document.getElementById("brand").textContent;
-            document.getElementById("modifyLocation").value = document.getElementById("location").textContent;
+            const assetName = document.getElementById("asset_name").textContent;
+            const assetType = document.getElementById("type_name").textContent;
+            const brand = document.getElementById("brand").textContent;
+            const location = document.getElementById("location").textContent;
+            const purchaseYear = document.getElementById("purchase_year").textContent;
+            const assetId = document.getElementById("asset_id").textContent;
 
-            // Set purchase year to a valid date format for input[type=date]
-            let purchaseYear = document.getElementById("purchase_year").textContent;
-            document.getElementById("modifyPurchaseYear").value = purchaseYear ? `${purchaseYear}-01-01` : "";
+            const modifyFormHtml = `
+                <div id="modifyAssetForm" class="mt-4 p-3 border bg-white">
+                    <h3>Modify Asset</h3>
+                    <label class="form-label">Asset Name</label>
+                    <input id="mod_asset_name" class="form-control mb-2" value="${assetName}">
+                    
+                    <label class="form-label">Asset Type</label>
+                    <input id="mod_asset_type" class="form-control mb-2" value="${assetType}">
+                    
+                    <label class="form-label">Brand</label>
+                    <input id="mod_brand" class="form-control mb-2" value="${brand}">
+                    
+                    <label class="form-label">Location</label>
+                    <input id="mod_location" class="form-control mb-2" value="${location}">
+                    
+                    <label class="form-label">Purchase Year</label>
+                    <input id="mod_purchase_year" class="form-control mb-2" type="number" value="${purchaseYear}">
+                    
+                    <button class="btn btn-success" onclick="modifyAsset(${assetId})">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('modifyAssetForm').remove()">Cancel</button>
+                </div>
+            `;
+
+            document.querySelector(".container").insertAdjacentHTML("beforeend", modifyFormHtml);
         }
 
-        function hideModifyForm() {
-            document.getElementById("modifyAssetForm").style.display = "none";
+
+        
+        async function fetchAssetTypes() {
+            try {
+                const response = await fetch("http://0.0.0.0:3000/admin/get_asset_types");
+                if (!response.ok) throw new Error("Failed to fetch asset types");
+
+                const data = await response.json();
+                return data.asset_types || [];
+            } catch (error) {
+                console.error("Error fetching asset types:", error);
+                return [];
+            }
         }
 
-        document.getElementById("modifyForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            const assetId = document.getElementById("modifyAssetId").value;
-            const assetType = document.getElementById("modifyAssetType").value;
-            const assetName = document.getElementById("modifyAssetName").value;
-            const brand = document.getElementById("modifyBrand").value;
-            const location = document.getElementById("modifyLocation").value;
-            const purchaseYear = new Date(document.getElementById("modifyPurchaseYear").value).getFullYear(); // Extract only the year
-
+        async function modifyAsset(assetId) {
             const updatedAsset = {
-                asset_id: parseInt(assetId),
-                asset_type_name: assetType,
-                asset_name: assetName,
-                location: location,
-                brand: brand,
-                purchase_year: purchaseYear
+                asset_id: assetId,
+                asset_type_name: document.getElementById("mod_asset_type").value,
+                asset_name: document.getElementById("mod_asset_name").value,
+                location: document.getElementById("mod_location").value,
+                brand: document.getElementById("mod_brand").value,
+                purchase_year: parseInt(document.getElementById("mod_purchase_year").value)
             };
 
             try {
@@ -127,11 +194,12 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(updatedAsset)
                 });
+
                 const result = await response.json();
                 if (result.assetModification) {
                     alert("Asset modified successfully!");
                     fetchAssetDetails();
-                    hideModifyForm();
+                    document.getElementById("modifyAssetForm").remove();
                 } else {
                     alert(result.message || "Error modifying asset.");
                 }
@@ -139,7 +207,7 @@
                 console.error("Error modifying asset:", error);
                 alert("Failed to modify asset. Please try again.");
             }
-        });
+        }
 
         document.addEventListener("DOMContentLoaded", fetchAssetDetails);
     </script>

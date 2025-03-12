@@ -12,7 +12,7 @@
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>User ID</th>
+                    <th>Sr. No.</th>
                     <th>Name</th>
                     <th>Role</th>
                 </tr>
@@ -44,10 +44,10 @@
                     let tableBody = document.getElementById("usersTableBody");
                     tableBody.innerHTML = ""; // Clear existing data
     
-                    data.users.forEach(user => {
+                    data.users.forEach((user, index) => {
                         let row = `
                             <tr>
-                                <td>${user.id}</td>
+                                <td>${index + 1}</td>  <!-- Sr. No. starts from 1 -->
                                 <td><a href="user_transactions.html?user_id=${user.id}">${user.name}</a></td>
                                 <td>${user.role}</td>
                             </tr>

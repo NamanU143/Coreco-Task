@@ -9,16 +9,20 @@ class AssetTypeExists:
     def __init__(self):
         try:
             self.conn = DatabaseConnection()
-            self.db:Session = self.conn.SessionLocal()
-            logging.info("MySql Database Connection Sucessfull for Asset Type Exists Component !!!")
+            self.db: Session = self.conn.SessionLocal()
+            logging.info("MySQL Database Connection Successful for Asset Type Exists Component!")
         except Exception as e:
-            logging.error(f"Database Connection Failed for Asset Type Exists Component {CustomException(e)}")
+            logging.error(f"Database Connection Failed for Asset Type Exists Component: {CustomException(e)}")
+            raise CustomException(e)
 
     def asset_type_exists(self, type_name: str) -> bool:
-
         try:
-            # checking if is active true and typename
-            exists = self.db.query(AssetTypes).filter(AssetTypes.type_name == type_name).first() # and AssetTypes.is_active==True
+            # Check if asset type exists and is active
+            exists = self.db.query(AssetTypes).filter(
+                AssetTypes.type_name == type_name,
+                # AssetTypes.is_active == True  # Ensuring active asset type
+            ).first()
+
             return exists is not None  
 
         except SQLAlchemyError as e:
@@ -26,4 +30,4 @@ class AssetTypeExists:
             raise CustomException(e)
         
         finally:
-            self.db.close()
+            self.db.close()  # Ensure session is closed after operation
