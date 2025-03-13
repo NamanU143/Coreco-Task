@@ -168,3 +168,24 @@ class AssetOperations:
             self.db.close()
 
 
+    def get_user_assets(self, user_id):
+        try:
+            user_assets = (
+                self.db.query(Asset, AssetTypes.type_name)
+                .join(AssetTypes, Asset.asset_type_id == AssetTypes.asset_type_id)
+                .filter(Asset.current_owner == user_id)
+                .all()
+            )
+            if not user_assets:
+                logging.info("No assets found for the user")
+                return []
+            user_assets = [dict(asset._asdict()) for asset in user_assets]
+            logging.info(f"Found assets for user id {user_id}: {user_assets}")
+            return user_assets
+        
+        except Exception as e:
+            logging.error(f"Failed to get user assets for user id {user_id}: {str(e)}")
+            raise CustomException(f"Error getting user assets for user {user_id}: {str(e)}")
+        finally:
+            self.db.close()
+        

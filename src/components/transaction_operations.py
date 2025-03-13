@@ -42,7 +42,16 @@ class Transactions:
             raise CustomException(e)
         finally:
             self.db.close()
-        
+    
+    def get_user_name(self,user_id):
+        try:
+            user = self.db.query(User).filter(User.id == user_id).first()
+            return user.name if user else None
+        except Exception as e:
+            logging.error(f"Error getting user name for user_id {user_id}: {CustomException(e)}")
+            raise CustomException(e)
+
+
     def get_user_transactions(self, user_id):
 
         try:
@@ -65,8 +74,8 @@ class Transactions:
                     "transaction_id": transaction.transaction_id,
                     "asset_id": asset.asset_id,
                     "asset_name": asset.asset_name,
-                    "from_user": transaction.from_user_id,  
-                    "to_user": user.id,  
+                    "from_user": self.get_user_name(transaction.from_user_id),  
+                    "to_user": self.get_user_name(user.id),  
                     "transfer_date": transaction.transaction_date.strftime("%Y-%m-%d %H:%M:%S")
                 })
 
