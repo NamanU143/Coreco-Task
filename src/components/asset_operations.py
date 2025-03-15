@@ -3,6 +3,7 @@ from src.exception import CustomException
 from src.configuration.mysql_connection import DatabaseConnection
 from src.models.models import Asset
 from src.models.models import AssetTypes,User
+from datetime import datetime
 
 class AssetOperations:
 
@@ -16,7 +17,7 @@ class AssetOperations:
             raise CustomException(e)
         
 
-    def add_asset(self, asset_type_id: int, asset_name: str, location: str, brand: str, purchase_year: int, 
+    def add_asset(self, asset_type_id: int, asset_name: str, location: str, brand: str, purchase_year: int,purchase_date: datetime,
                   is_active_asset: bool = True, current_owner: int = 1):
         try:
             new_asset = Asset(
@@ -26,7 +27,8 @@ class AssetOperations:
                 brand=brand,
                 purchase_year=purchase_year,
                 is_active_asset=is_active_asset,
-                current_owner=current_owner
+                current_owner=current_owner,
+                purchase_date=purchase_date
             )
             self.db.add(new_asset)
             self.db.commit()
@@ -73,7 +75,7 @@ class AssetOperations:
         finally:
             self.db.close()
 
-    def modify_asset(self, asset_id, asset_type_id, asset_name, location, brand, purchase_year):
+    def modify_asset(self, asset_id, asset_type_id, asset_name, location, brand, purchase_year,purchase_date):
         try:
             modify_asset = self.db.query(Asset).filter(Asset.asset_id == asset_id).one()
             modify_asset.asset_type_id = asset_type_id
@@ -81,6 +83,7 @@ class AssetOperations:
             modify_asset.location = location
             modify_asset.brand = brand
             modify_asset.purchase_year = purchase_year
+            modify_asset.purchase_date = purchase_date
             self.db.commit()
             logging.info(f"Asset with id {asset_id} modified successfully")
         except Exception as e:
@@ -156,6 +159,7 @@ class AssetOperations:
                     "location": asset.location,
                     "brand": asset.brand,
                     "purchase_year": asset.purchase_year,
+                    "purchase_date": asset.purchase_date,
                     "current_owner": current_owner_name,  # Correctly fetching name
                     "current_owner_id":asset.current_owner
                 }

@@ -32,6 +32,7 @@ class Pipeline:
         except Exception as e:
             logging.info(f"Error Calling User Operations Component (get user id) {CustomException(e)}")
             raise CustomException(e)
+
     def __call_user_exists(self,email:Optional[str]=None,user_id:Optional[int]=None):
         try:
             userexists = UserExists()
@@ -177,23 +178,23 @@ class Pipeline:
             logging.info(f"Error Calling AssetTypeOperations Component (get asset type id) {CustomException(e)}")
             raise CustomException(e)
         
-    def __call_add_asset(self,asset_type_id,asset_name,location,brand,purchase_year):
+    def __call_add_asset(self,asset_type_id,asset_name,location,brand,purchase_year,purchase_date):
         try:
             logging.info("Calling AssetOperations Component for adding asset")
             addassets = AssetOperations()
             addassets.add_asset(asset_type_id=asset_type_id,asset_name=asset_name,location=location,brand=brand,
-                                purchase_year=purchase_year) # is_active_asset,current_owner
+                                purchase_year=purchase_year,purchase_date=purchase_date) # is_active_asset,current_owner
             logging.info(">>> Completed Adding Asset")
         except Exception as e:
             logging.info(f"Error Calling AssetOperations Component (add asset) {CustomException(e)}")
             raise CustomException(e)
         
-    def __call_modify_asset(self, asset_id, asset_type_id, asset_name, location, brand, purchase_year):
+    def __call_modify_asset(self, asset_id, asset_type_id, asset_name, location, brand, purchase_year, purchase_date):
         try:
             logging.info("<<< Calling AssetOperations Component for modifying asset")
             modifyassets = AssetOperations()
             modifyassets.modify_asset(asset_id=asset_id, asset_type_id=asset_type_id, asset_name=asset_name, 
-                                      location=location, brand=brand, purchase_year=purchase_year)
+                                      location=location, brand=brand, purchase_year=purchase_year,purchase_date=purchase_date)
         except Exception as e :
             logging.info(f"Error Calling AssetOperations Component (modify asset)")
             raise CustomException(e)
@@ -266,10 +267,24 @@ class Pipeline:
             logging.error(f"Error in Calling Transaction Component (get current owner) {CustomException(e)}")
             raise CustomException(e)       
 
+    def __call_get_user_name(self,user_id):
+        try:
+            logging.info("<<< Calling UserOperations for getting user name")
+            getusername = Transactions()
+            username = getusername.get_user_name(user_id=user_id)
+            return username
+        except Exception as e:
+            logging.error(f"Error in Calling UserOperations Component (get user name) {CustomException(e)}")
+            raise CustomException(e)
+        
+
+###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 
 # PIPELINES
+#--------------------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------------------
 
     def initiate_registration_pipeline(self,name,email,password):
         try:
@@ -561,7 +576,7 @@ class Pipeline:
             raise CustomException(e)
     
     # add assets pipeline
-    def initiate_add_asset_pipeline(self, asset_type_name, asset_name, location, brand, purchase_year):
+    def initiate_add_asset_pipeline(self, asset_type_name, asset_name, location, brand, purchase_year,purchase_date):
         try:
             logging.info(f"<<< Initiating add asset pipeline")
 
@@ -588,7 +603,7 @@ class Pipeline:
             
             logging.info("<<< Initiated Add Asset Component")
             self.__call_add_asset(asset_type_id=asset_type_id,asset_name=asset_name,location=location,
-                                brand=brand,purchase_year=purchase_year)
+                                brand=brand,purchase_year=purchase_year,purchase_date=purchase_date)
             logging.info("<<< Completed Add Asset Component")
             
             logging.info("!!! Completed add asset pipeline")
@@ -602,7 +617,7 @@ class Pipeline:
             raise CustomException(e)
         
     # modify assets pipeline
-    def initiate_modify_asset_pipeline(self, asset_id, asset_type_name, asset_name, location, brand, purchase_year):
+    def initiate_modify_asset_pipeline(self, asset_id, asset_type_name, asset_name, location, brand, purchase_year,purchase_date):
         try:
             logging.info(f"<<< Initiating modify asset pipeline")
             
@@ -645,7 +660,7 @@ class Pipeline:
             
             logging.info("<<< Initiated Modify Asset Component")
             self.__call_modify_asset(asset_id=asset_id, asset_type_id=asset_type_id, asset_name=asset_name,
-                                     location=location, brand=brand, purchase_year=purchase_year)
+                                     location=location, brand=brand, purchase_year=purchase_year,purchase_date=purchase_date)
             
             logging.info(">>> Completed Modify Asset Component")
             
@@ -756,27 +771,33 @@ class Pipeline:
         except Exception as e:
             logging.error(f"Error in get asset details pipeline!!! - {CustomException(e)}")
             raise CustomException(e)
+
+
 #----------------------------------------------------------------
 # Transactions
 
     # transfer owner pipeline
     def initiate_transfer_owner_pipeline(self, asset_id, from_user_id, to_user_id): 
         try:
+
+            from_user_id_name = self.__call_get_user_name(from_user_id)
+            to_user_id_name = self.__call_get_user_name(to_user_id)
+
             logging.info("Checking if users exists for from_user_id and to_user_id")
             if not self.__call_user_exists(user_id=from_user_id) :
                 logging.info(f"User not found for user_id: {from_user_id}")
                 return {
                     "userExists": False,
                     "transactionStatus":False,
-                    "message":f"User does not exist for user_id: {from_user_id}"
+                    "message":f"User does not exist for user_id: {from_user_id_name}"
                 }
             
             if not self.__call_user_exists(user_id=to_user_id) :
-                logging.info(f"User not found for user_id: {to_user_id}")
+                logging.info(f"User not found for user_id: {to_user_id_name}")
                 return {
                     "userExists": False,
                     "transactionStatus":False,
-                    "message":f"User does not exist for user_id: {to_user_id}"
+                    "message":f"User does not exist for user_id: {to_user_id_name}"
                 }
             
 
@@ -791,7 +812,7 @@ class Pipeline:
             if from_user_id != current_owner:
                 return {
                     "transactionStatus":False,
-                    "message":f"user_id {from_user_id} is not the owner of the asset id {asset_id}"
+                    "message":f"user_id {from_user_id_name} is not the owner of the asset id {asset_id}"
                 }
             
             logging.info("<<< Initiating Asset Exists Component")

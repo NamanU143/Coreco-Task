@@ -60,9 +60,9 @@ class Asset(Base):
     purchase_year = Column(Integer)   # change after ward
     is_active_asset = Column(Boolean, default=True)
     current_owner = Column(Integer, ForeignKey('users.id', ondelete='SET DEFAULT'), nullable=False, default=1)  # default value to 1 for admin
-    
+    purchase_date = Column(DateTime)
 
-    def __init__(self, asset_type_id: int, asset_name: str, location: str, brand: str, purchase_year: Integer, 
+    def __init__(self, asset_type_id: int, asset_name: str, location: str, brand: str, purchase_year: Integer,purchase_date:Optional[DateTime], 
                  is_active_asset: Optional[bool] = None,  current_owner: Optional[int] = 1, asset_id: Optional[int] = None):
         self.asset_id = asset_id
         self.asset_type_id = asset_type_id
@@ -72,6 +72,7 @@ class Asset(Base):
         self.purchase_year = purchase_year
         self.is_active_asset = is_active_asset
         self.current_owner = current_owner
+        self.purchase_date = purchase_date
         
 
     

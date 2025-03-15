@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from src.pipeline import Pipeline
 from src.logger import logging
 from typing import Optional
+from datetime import datetime
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -50,6 +51,7 @@ class AddAsset(BaseModel):
     location:str
     brand:str
     purchase_year:int
+    purchase_date:datetime
 
 class ModifyAsset(BaseModel):
     asset_id:int
@@ -58,6 +60,7 @@ class ModifyAsset(BaseModel):
     location: Optional[str]
     brand: Optional[str]
     purchase_year: Optional[int]
+    purchase_date: Optional[datetime]
 
 class TransferAsset(BaseModel):
     asset_id: int
@@ -194,7 +197,7 @@ async def add_assets(data:AddAsset=Body(...)):
     """
     try:
         response = pipeline.initiate_add_asset_pipeline(asset_type_name=data.asset_type_name,asset_name=data.asset_name
-                                                        ,location=data.location, brand=data.brand,purchase_year=data.purchase_year)
+                                                        ,location=data.location, brand=data.brand,purchase_year=data.purchase_year,purchase_date=data.purchase_date)
 
         return response
     except HTTPException as e:
@@ -207,7 +210,7 @@ async def modify_assets(data:ModifyAsset=Body(...)):
     try:
         response = pipeline.initiate_modify_asset_pipeline(asset_id=data.asset_id,asset_type_name=data.asset_type_name,
                                                            asset_name=data.asset_name,location=data.location,brand=data.brand,
-                                                           purchase_year=data.purchase_year)
+                                                           purchase_year=data.purchase_year,purchase_date=data.purchase_date)
         return response
     except HTTPException as e:
         logging.info(f"Error While Modifying Asset Types - {CustomException(e)}")
