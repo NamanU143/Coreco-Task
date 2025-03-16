@@ -46,10 +46,10 @@ class AssetOperations:
             assets = (self.db.query(
                         Asset.asset_id,
                         Asset.asset_name,
-                        Asset.location,
-                        Asset.brand,
-                        Asset.purchase_year,
-                        Asset.is_active_asset,
+                        # Asset.location,
+                        # Asset.brand,
+                        # Asset.purchase_year,
+                        # Asset.is_active_asset,
                         AssetTypes.type_name.label("asset_type"),
                         User.name.label("current_owner_name"),
                         Asset.current_owner
