@@ -91,24 +91,4 @@ Tracks asset transfers between users.
 
 ---
 
-## Relationships
-- **Users** own **Assets** (`assets.current_owner` links to `users.id`).
-- **Assets** belong to an **Asset Type** (`assets.asset_type_id` links to `asset_types.asset_type_id`).
-- **Transactions** track asset transfers (`transactions.asset_id` links to `assets.asset_id`).
-- **Transactions** also track ownership changes (`transactions.from_user_id` and `transactions.to_user_id` link to `users.id`).
-
----
-
-## Usage
-This schema can be used in an **Asset Management System** to:
-- Add, update, and delete assets.
-- Track asset transfers between users.
-- Maintain a log of transactions.
-- Ensure only active assets are assigned.
-
----
-
-## License
-This database schema is open-source and can be modified as needed.
-
 
