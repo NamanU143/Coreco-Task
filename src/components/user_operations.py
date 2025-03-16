@@ -37,3 +37,23 @@ class UserOperations:
             logging.error(f"Database Error While Getting User ID: {CustomException(e)}")
             raise CustomException(e)
         
+    def get_users(self):
+        try:
+            user_details = self.db.query(User.id,User.name,User.role).all()
+            users_list = [{"id": user.id, "name": user.name, "role": user.role} for user in user_details]
+
+            return users_list
+        
+        except SQLAlchemyError as e:
+            logging.error(f"Database Error While Getting User Details: {CustomException(e)}")
+            raise CustomException(e)
+        
+    def get_user_role(self, email: str) -> str:
+        try:
+            user = self.db.query(User).filter(User.email == email).first()
+            return user.role if user else None
+        
+        except SQLAlchemyError as e:
+            logging.error(f"Database Error While Getting User Role: {CustomException(e)}")
+            raise CustomException(e)
+        

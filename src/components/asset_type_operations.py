@@ -12,7 +12,7 @@ class AssetTypeOperations:
     
     def get_asset_types(self):
         try:
-            asset_types = self.db.query(AssetTypes).all()
+            asset_types = self.db.query(AssetTypes).filter(AssetTypes.is_active==True).all()
             if len(asset_types) <= 0:
                 logging.info("No asset types found in the database")
                 return []

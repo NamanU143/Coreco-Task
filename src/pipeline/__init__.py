@@ -5,7 +5,6 @@ from src.components.user_exists import UserExists
 from src.components.encrypt_password import EncryptPassword
 from src.components.create_user import CreateUser
 from src.components.authenticate_user import AuthenticateUser
-from src.components.get_role import UserRole
 from src.components.asset_type_exists import AssetTypeExists
 from src.components.asset_type_operations import AssetTypeOperations
 from src.components.asset_operations import AssetOperations
@@ -69,7 +68,7 @@ class Pipeline:
         
     def __call_get_role(self,email):
         try:
-            userrole = UserRole()
+            userrole = UserOperations()
             role = userrole.get_user_role(email=email)
             return role
         except Exception as e:
@@ -241,7 +240,7 @@ class Pipeline:
         try:
             logging.info("<<< Calling UserOperations for getting user details")
             getuserdetails = UserOperations()
-            user_details = getuserdetails.get_user_details()
+            user_details = getuserdetails.get_users()
             return user_details
         except Exception as e:
             logging.error(f"Error in Calling UserOperations Component (get user details) {CustomException(e)}")

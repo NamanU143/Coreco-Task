@@ -1,5 +1,0 @@
-1. creating database structure using mysql 
-2. using orm and defining same sql model to interact with mysql database
-3. if possible create a different class for database connection 
-4. visualize how the frontend will look 
-5. find the relationships and proper datatypes for the tables.
