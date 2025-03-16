@@ -112,7 +112,17 @@ class Pipeline:
         except Exception as e:
             logging.info(f"Error Calling AssetTypeOperations Component (disable asset type) {CustomException(e)}")
             raise CustomException(e)
-    
+
+    def __call_make_status_active(self,asset_type_name):
+        try:
+            logging.info("<<< Calling AssetTypeOperations Component")
+            makeactive = AssetTypeOperations()
+            makeactive.enable_asset_type(type_name=asset_type_name)
+            logging.info(">>> Completed Making Asset Type Status Active")
+        except Exception as e:
+            logging.info(f"Error Calling AssetTypeOperations Component (make asset type status active) {CustomException(e)}")
+            raise CustomException(e)
+
     def __call_enable_asset_type(self,type_name):
         try:
             logging.info("<<< Calling AssetTypeOperations Component")
@@ -384,9 +394,10 @@ class Pipeline:
             logging.info("<<< Completed Asset Type Exists In Database") 
 
             if assetexists :
+                self.__call_make_status_active(asset_type_name=asset_type_name)
                 return {
                     "assettypeexists" : True,
-                    "message":"Asset already exists in the database"
+                    "message":"Asset added successfully"
                 }
             
             logging.info("<<< Adding New Asset Type In the Database")
