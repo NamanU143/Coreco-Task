@@ -606,6 +606,7 @@ class Pipeline:
             logging.info(f" asset_type_id = {asset_type_id}")
 
             if not assetexists :
+
                 return {
                     "assetexists" : False,
                     "message":"Asset type does not exist in the database"
@@ -615,7 +616,7 @@ class Pipeline:
             self.__call_add_asset(asset_type_id=asset_type_id,asset_name=asset_name,location=location,
                                 brand=brand,purchase_year=purchase_year,purchase_date=purchase_date)
             logging.info("<<< Completed Add Asset Component")
-            
+
             logging.info("!!! Completed add asset pipeline")
             return {
                 "assetexists":True,

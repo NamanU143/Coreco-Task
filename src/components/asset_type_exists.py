@@ -17,10 +17,8 @@ class AssetTypeExists:
 
     def asset_type_exists(self, type_name: str) -> bool:
         try:
-            # Check if asset type exists and is active
             exists = self.db.query(AssetTypes).filter(
                 AssetTypes.type_name == type_name,
-                # AssetTypes.is_active == True  # Ensuring active asset type
             ).first()
 
             return exists is not None  
